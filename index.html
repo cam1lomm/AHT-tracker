@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AHT Manager - BPO Timer</title>
+    <style>
+        :root {
+            /* Nueva Paleta "Cyber-Production" */
+            --bg-color: #0d0d12; /* Fondo casi negro azulado */
+            --card-bg: #16161e;  /* Fondo de la tarjeta un poco más claro */
+            --text-color: #e0e0e0;
+            
+            --brand-color: #9d4edd; /* Púrpura principal */
+            --brand-glow: rgba(157, 78, 221, 0.4);
+            
+            --positive-color: #c77dff; /* Lila brillante para números positivos */
+            --negative-color: #ff3333; /* Rojo brillante para alerta */
+            
+            --btn-action-bg: #7b2cbf; /* Púrpura oscuro para botón */
+            --btn-action-hover: #9d4edd;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.7); /* Sombra más dramática */
+            text-align: center;
+            width: 90%;
+            max-width: 420px;
+            border: 1px solid #2a2a35;
+        }
+
+        h1 { 
+            margin-top: 0; 
+            font-size: 1.1rem; 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+            color: #666; 
+            margin-bottom: 25px;
+        }
+
+        /* Estilo del Temporizador */
+        #timer-display {
+            font-size: 5.5rem; /* Un poco más grande */
+            font-weight: 700;
+            margin: 15px 0;
+            font-variant-numeric: tabular-nums;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        .positive { 
+            color: var(--positive-color); 
+            text-shadow: 0 0 20px var(--brand-glow); 
+        }
+        
+        .negative { 
+            color: var(--negative-color); 
+            text-shadow: 0 0 20px rgba(255, 51, 51, 0.4); 
+        }
+
+        /* Inputs y Configuración */
+        .settings {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        input[type="number"] {
+            background: #2a2a35;
+            border: 1px solid #3f3f50;
+            color: var(--positive-color);
+            padding: 8px;
+            border-radius: 8px;
+            width: 70px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--brand-color);
+        }
+
+        /* Botones */
+        .controls { display: grid; gap: 12px; }
+        
+        button {
+            padding: 18px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:active { transform: scale(0.97); }
+
+        .btn-add {
+            background-color: var(--btn-action-bg);
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 15px rgba(123, 44, 191, 0.3);
+        }
+
+        .btn-add:hover {
+            background-color: var(--btn-action-hover);
+            box-shadow: 0 4px 20px rgba(157, 78, 221, 0.5);
+        }
+
+        .btn-pause { 
+            background-color: #2a2a35; 
+            color: #bbb; 
+            border: 1px solid #3f3f50;
+        }
+        
+        .btn-pause:hover {
+            background-color: #3f3f50;
+            color: white;
+        }
+        
+        .btn-pause.active {
+             background-color: #ff9f1c; /* Naranja para cuando está activo/pausar */
+             color: black;
+             border: none;
+        }
+
+        .btn-reset { 
+            background-color: transparent; 
+            color: #555; 
+            font-size: 0.8rem;
+            padding: 10px;
+            margin-top: 5px;
+        }
+        
+        .btn-reset:hover { color: #ff3333; }
+
+        .stats {
+            margin-top: 30px;
+            font-size: 0.85rem;
+            color: #666;
+            border-top: 1px solid #2a2a35;
+            padding-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        .stats span { color: #fff; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>AHT Efficiency Tracker</h1>
+        
+        <div class="settings">
+            <label>Target AHT (sec):</label>
+            <input type="number" id="aht-input" value="60">
+        </div>
+
+        <div id="timer-display" class="positive">00:00</div>
+
+        <div class="controls">
+            <button class="btn-add" onclick="addCase()">+ New Case</button>
+            
+            <button class="btn-pause active" id="btn-pause" onclick="togglePause()">Pause</button>
+            
+            <button class="btn-reset" onclick="resetTimer()">Reset All Data</button>
+        </div>
+
+        <div class="stats">
+            <div>Total Cases: <span id="case-count">0</span></div>
+            <div>Status: <span id="status-text" style="color:var(--brand-color)">Waiting</span></div>
+        </div>
+    </div>
+
+    <script>
+        let balanceSeconds = 0;
+        let isRunning = false;
+        let interval = null;
+        let cases = 0;
+
+        const display = document.getElementById('timer-display');
+        const statusText = document.getElementById('status-text');
+        const pauseBtn = document.getElementById('btn-pause');
+        const caseCountDisplay = document.getElementById('case-count');
+        const ahtInput = document.getElementById('aht-input');
+
+        function updateDisplay() {
+            const isNegative = balanceSeconds < 0;
+            const absSeconds = Math.abs(balanceSeconds);
+
+            const minutes = Math.floor(absSeconds / 60);
+            const seconds = absSeconds % 60;
+
+            const formattedTime = 
+                (isNegative ? "-" : "") + 
+                (minutes < 10 ? "0" : "") + minutes + ":" + 
+                (seconds < 10 ? "0" : "") + seconds;
+
+            display.textContent = formattedTime;
+
+            if (balanceSeconds >= 0) {
+                display.classList.remove('negative');
+                display.classList.add('positive');
+            } else {
+                display.classList.remove('positive');
+                display.classList.add('negative');
+            }
+        }
+
+        function tick() {
+            balanceSeconds--;
+            updateDisplay();
+        }
+
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                interval = setInterval(tick, 1000);
+                
+                // Cambios de estado y UI
+                statusText.textContent = "Production";
+                statusText.style.color = "#c77dff"; // Lila
+                
+                pauseBtn.textContent = "Pause";
+                pauseBtn.classList.add('active'); // Estilo naranja
+            }
+        }
+
+        function togglePause() {
+            if (isRunning) {
+                // Pausar
+                clearInterval(interval);
+                isRunning = false;
+                
+                statusText.textContent = "Away / Break";
+                statusText.style.color = "#888"; 
+                
+                pauseBtn.textContent = "Resume";
+                pauseBtn.classList.remove('active'); // Estilo oscuro
+            } else {
+                // Reanudar
+                // Solo reanudar si hay casos activos o el usuario quiere forzarlo
+                startTimer();
+            }
+        }
+
+        function addCase() {
+            const timeToAdd = parseInt(ahtInput.value) || 60;
+            
+            balanceSeconds += timeToAdd;
+            
+            cases++;
+            caseCountDisplay.textContent = cases;
+
+            // Aseguramos que arranque al añadir caso
+            startTimer();
+            updateDisplay();
+        }
+
+        function resetTimer() {
+            if(confirm("Are you sure you want to reset all data?")) {
+                clearInterval(interval);
+                isRunning = false;
+                balanceSeconds = 0;
+                cases = 0;
+                caseCountDisplay.textContent = 0;
+                updateDisplay();
+                
+                statusText.textContent = "Waiting";
+                statusText.style.color = "#666";
+                
+                pauseBtn.textContent = "Pause";
+                pauseBtn.classList.add('active');
+            }
+        }
+
+        // Inicializar
+        updateDisplay();
+    </script>
+</body>
+</html>
