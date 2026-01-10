@@ -1,412 +1,398 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AHT Pro Manager</title>
-    <style>
-        :root {
-            --bg-color: #09090b; /* Negro profundo */
-            --card-bg: #13131a;  /* Gris muy oscuro */
-            --border-color: #272733;
-            --text-main: #e0e0e0;
-            --text-muted: #8a8a9b;
-            
-            /* Colores de marca */
-            --brand-primary: #8b5cf6; /* Violeta vibrante */
-            --brand-glow: rgba(139, 92, 246, 0.5);
-            
-            /* Estados */
-            --state-positive: #a78bfa; /* Lila claro */
-            --state-negative: #ff0000; /* Rojo */
-            --state-active: #34d399;   /* Verde menta para 'Production' */
-            
-            --btn-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-        }
+<meta charset="UTF-8">
+<title>AHT Control Center</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
+<style>
+:root {
+    --bg-color:#09090b;
+    --card-bg:#13131a;
+    --border-color:#272733;
+    --text-main:#e0e0e0;
+    --text-muted:#8a8a9b;
+    --brand-primary:#8b5cf6;
+    --state-positive:#a78bfa;
+    --state-negative:#f87171;
+    --state-active:#34d399;
+    --btn-gradient:linear-gradient(135deg,#7c3aed,#6d28d9);
+}
 
-        .container {
-            background-color: var(--card-bg);
-            padding: 2.5rem;
-            border-radius: 24px;
-            box-shadow: 0 20px 50px -10px rgba(0,0,0,0.8);
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid var(--border-color);
-            position: relative;
-            overflow: hidden;
-        }
+body{
+    background:var(--bg-color);
+    color:var(--text-main);
+    font-family:Inter,system-ui;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    margin:0;
+}
 
-        /* Header */
-        h1 { 
-            margin: 0 0 20px 0;
-            font-size: 0.9rem; 
-            text-transform: uppercase; 
-            letter-spacing: 3px; 
-            color: var(--text-muted); 
-            font-weight: 600;
-        }
+.container{
+    background:var(--card-bg);
+    border-radius:24px;
+    padding:28px;
+    width:420px;
+    border:1px solid var(--border-color);
+    box-shadow:0 20px 40px rgba(0,0,0,.7);
+}
 
-        /* Configuración */
-        .settings {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
+h1{
+    text-align:center;
+    font-size:.8rem;
+    text-transform:uppercase;
+    letter-spacing:3px;
+    color:var(--text-muted);
+    margin-bottom:20px;
+}
 
-        input[type="number"] {
-            background: #1e1e26;
-            border: 1px solid var(--border-color);
-            color: var(--brand-primary);
-            padding: 6px 10px;
-            border-radius: 8px;
-            width: 50px;
-            text-align: center;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-        input[type="number"]:focus {
-            outline: none;
-            border-color: var(--brand-primary);
-            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
-        }
+.settings{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+    color:var(--text-muted);
+    font-size:.8rem;
+    text-transform:uppercase;
+    letter-spacing:1px;
+}
 
-        /* Temporizador */
-        #timer-display {
-            font-size: 5rem;
-            font-weight: 800;
-            line-height: 1;
-            margin: 10px 0 25px 0;
-            font-variant-numeric: tabular-nums;
-            transition: color 0.3s, transform 0.1s;
-        }
+#aht-input{
+    background:#1a1a24;
+    border:1px solid var(--border-color);
+    color:var(--brand-primary);
+    font-weight:700;
+    width:60px;
+    text-align:center;
+    border-radius:10px;
+    padding:6px 8px;
+}
 
-        .positive { color: var(--state-positive); text-shadow: 0 0 30px rgba(167, 139, 250, 0.3); }
-        .negative { color: var(--state-negative); text-shadow: 0 0 30px rgba(248, 113, 113, 0.3); }
+#aht-input:focus{
+    outline:none;
+    border-color:var(--brand-primary);
+    box-shadow:0 0 0 2px rgba(139,92,246,.3);
+}
 
-        /* Efecto Flash para el timer */
-        @keyframes timerFlash {
-            0% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.05); filter: brightness(1.5); }
-            100% { transform: scale(1); filter: brightness(1); }
-        }
-        .flash-anim { animation: timerFlash 0.3s ease-out; }
+#timer-display{
+    text-align:center;
+    font-size:4.5rem;
+    font-weight:800;
+    margin:10px 0;
+}
 
-        /* Live Stats Grid */
-        .live-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 25px;
-            background: #1a1a24;
-            padding: 15px;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-        }
+#case-timer{
+    text-align:center;
+    font-size:2.8rem;
+    font-weight:700;
+    margin:10px 0 5px 0;
+    color:var(--state-active);
+}
 
-        .stat-box {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        
-        .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
-        .stat-value { font-size: 1.4rem; font-weight: 700; color: #fff; }
-        .unit { font-size: 0.8rem; font-weight: 400; color: var(--text-muted); margin-left: 2px;}
+.positive{color:var(--state-positive)}
+.negative{color:var(--state-negative)}
 
-        /* Controles */
-        .controls { display: flex; flex-direction: column; gap: 12px; }
-        
-        button {
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1rem;
-            padding: 16px;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.1s, filter 0.2s;
-        }
+.stats-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:12px;
+    margin-top:12px;
+}
 
-        button:active { transform: scale(0.98); }
+.stat-card{
+    background:#1a1a24;
+    border:1px solid var(--border-color);
+    border-radius:14px;
+    padding:14px;
+    text-align:center;
+}
 
-        /* Botón New Case con gradiente */
-        .btn-add {
-            background: var(--btn-gradient);
-            color: white;
-            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
-            z-index: 1;
-        }
-        .btn-add:hover { filter: brightness(1.1); }
+.stat-label{
+    font-size:.7rem;
+    color:var(--text-muted);
+    text-transform:uppercase;
+    letter-spacing:1px;
+}
 
-        /* Animación Ripple Sutil */
-        .btn-add::after {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 5px; height: 5px;
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
-        }
+.stat-value{
+    font-size:1.4rem;
+    font-weight:700;
+    color:white;
+}
 
-        @keyframes ripple {
-            0% { transform: scale(0, 0); opacity: 0.5; }
-            100% { transform: scale(50, 50); opacity: 0; }
-        }
+/* CASE HISTORY */
+.case-history{
+    margin-top:12px;
+    background:#1a1a24;
+    border-radius:14px;
+    border:1px solid var(--border-color);
+    overflow:hidden;
+}
 
-        .btn-add.animate::after { animation: ripple 0.5s ease-out; }
+.case-history-header{
+    padding:10px 14px;
+    font-size:.7rem;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--text-muted);
+    border-bottom:1px solid var(--border-color);
+    text-align:center;
+}
 
-        .btn-pause {
-            background: #272733;
-            color: #fff;
-            border: 1px solid transparent;
-        }
-        .btn-pause:hover { background: #323242; }
-        .btn-pause.active { 
-            border: 1px solid #f59e0b; 
-            color: #f59e0b; 
-            background: rgba(245, 158, 11, 0.1); 
-        }
+.case-row{
+    display:flex;
+    justify-content:space-between;
+    padding:8px 14px;
+    font-size:.85rem;
+    border-bottom:1px solid var(--border-color);
+}
+.case-row:last-child{border-bottom:none}
 
-        .btn-reset {
-            background: transparent;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            padding: 10px;
-        }
-        .btn-reset:hover { color: var(--state-negative); }
+.case-number{color:var(--text-muted)}
+.case-time{font-weight:700}
 
-        /* Footer Info */
-        .footer-info {
-            margin-top: 20px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid var(--border-color);
-            padding-top: 15px;
-        }
+.controls{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-top:15px;
+}
 
-        #status-indicator {
-            display: inline-block;
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            background-color: #555;
-            margin-right: 5px;
-        }
-        .status-on { background-color: var(--state-active) !important; box-shadow: 0 0 10px var(--state-active); }
-    </style>
+button{
+    padding:14px;
+    border-radius:12px;
+    border:none;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.btn-add{
+    background:var(--btn-gradient);
+    color:white;
+}
+
+.btn-pause{
+    background:#272733;
+    color:white;
+}
+
+.btn-reset{
+    background:none;
+    color:var(--text-muted);
+}
+
+.footer-info{
+    margin-top:16px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    font-size:.8rem;
+    color:var(--text-muted);
+}
+
+#clock{
+    color:var(--brand-primary);
+    font-weight:700;
+    font-size:1.4rem;
+    letter-spacing:2px;
+}
+
+#sound-btn{
+    background:none;
+    border:none;
+    color:var(--brand-primary);
+    font-size:22px;
+    cursor:pointer;
+    padding:0;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="container">
-        <h1>AHT Control Center</h1>
-        
-        <div class="settings">
-            <label>Goal AHT:</label>
-            <input type="number" id="aht-input" value="60"> <span>sec</span>
-        </div>
+<audio id="case-sound" src="https://assets.mixkit.co/active_storage/sfx/2947/2947-preview.mp3"></audio>
 
-        <div id="timer-display" class="positive">00:00</div>
+<div class="container">
+<h1>AHT Control Center</h1>
 
-        <div class="live-stats">
-            <div class="stat-box">
-                <span class="stat-label">Actual AHT</span>
-                <span class="stat-value" id="actual-aht">--<span class="unit">s</span></span>
-            </div>
-            <div class="stat-box">
-                <span class="stat-label">Throughput</span>
-                <span class="stat-value" id="throughput">--<span class="unit">/hr</span></span>
-            </div>
-        </div>
+<div class="settings">
+    <span>Goal AHT</span>
+    <input type="number" id="aht-input" value="60">
+    <span>sec</span>
+</div>
 
-        <div class="controls">
-            <button class="btn-add" id="btn-add" onclick="addCase()">+ NEW CASE</button>
-            <button class="btn-pause" id="btn-pause" onclick="togglePause()">Start / Resume</button>
-            <button class="btn-reset" onclick="resetTimer()">Reset Session</button>
-        </div>
+<div id="timer-display" class="positive">00:00</div>
 
-        <div class="footer-info">
-            <div>Cases: <strong id="case-count" style="color:white">0</strong></div>
-            <div style="display:flex; align-items:center;">
-                <span id="status-indicator"></span>
-                <span id="status-text">Ready</span>
-            </div>
-        </div>
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Actual AHT</div>
+        <div class="stat-value" id="actual-aht">--</div>
     </div>
 
-    <script>
-        let balanceSeconds = 0; // Banco de tiempo (Meta - Real)
-        let totalSecondsWorked = 0; // Tiempo real transcurrido en "Production"
-        let isRunning = false;
-        let interval = null;
-        let cases = 0;
+    <div class="stat-card">
+        <div class="stat-label">Cases</div>
+        <div class="stat-value" id="case-progress">0 / 450</div>
+    </div>
 
-        // Elementos DOM
-        const display = document.getElementById('timer-display');
-        const statusText = document.getElementById('status-text');
-        const statusInd = document.getElementById('status-indicator');
-        const pauseBtn = document.getElementById('btn-pause');
-        const addBtn = document.getElementById('btn-add');
-        const caseCountDisplay = document.getElementById('case-count');
-        const ahtInput = document.getElementById('aht-input');
-        
-        // Elementos de Stats
-        const actualAhtDisplay = document.getElementById('actual-aht');
-        const throughputDisplay = document.getElementById('throughput');
+    <div class="stat-card">
+        <div class="stat-label">Throughput</div>
+        <div class="stat-value" id="throughput">--</div>
+    </div>
+</div>
 
-        // Función principal que corre cada segundo
-        function tick() {
-            balanceSeconds--;       // Resta del banco (para el timer visual)
-            totalSecondsWorked++;   // Suma al tiempo real trabajado (para stats)
-            
-            updateDisplay();
-            updateStats();
-        }
+<div id="case-timer">00:00</div>
 
-        // Formatea y muestra el tiempo grande
-        function updateDisplay() {
-            const isNegative = balanceSeconds < 0;
-            const absSeconds = Math.abs(balanceSeconds);
-            const minutes = Math.floor(absSeconds / 60);
-            const seconds = absSeconds % 60;
+<div class="case-history">
+    <div class="case-history-header">Last 5 Cases</div>
+    <div id="case-table"></div>
+</div>
 
-            const formattedTime = 
-                (isNegative ? "-" : "") + 
-                (minutes < 10 ? "0" : "") + minutes + ":" + 
-                (seconds < 10 ? "0" : "") + seconds;
+<div class="controls">
+    <button class="btn-add" onclick="addCase()">+ New Case</button>
+    <button class="btn-pause" onclick="togglePause()">Start / Pause</button>
+    <button class="btn-reset" onclick="resetTimer()">Reset</button>
+</div>
 
-            display.textContent = formattedTime;
+<div class="footer-info">
+    <div id="clock"></div>
+    <button id="sound-btn">🔊</button>
+</div>
 
-            if (balanceSeconds >= 0) {
-                display.classList.remove('negative');
-                display.classList.add('positive');
-            } else {
-                display.classList.remove('positive');
-                display.classList.add('negative');
-            }
-        }
+</div>
 
-        // Calcula y muestra AHT Real y Throughput
-        function updateStats() {
-            if (cases > 0) {
-                // AHT Real = Tiempo Total Trabajado / Casos
-                const realAHT = (totalSecondsWorked / cases).toFixed(0);
-                actualAhtDisplay.innerHTML = `${realAHT}<span class="unit">s</span>`;
+<script>
+let balanceSeconds=0,totalSecondsWorked=0,caseSeconds=0,isRunning=false,interval=null,cases=0;
+let lastCaseTime=0,caseHistory=[],soundOn=true;
 
-                // Throughput = (Casos / Tiempo Total en Segundos) * 3600
-                // (Casos proyectados por hora)
-                // Evitamos división por cero al inicio
-                if (totalSecondsWorked > 0) {
-                    const tph = ((cases / totalSecondsWorked) * 3600).toFixed(1);
-                    throughputDisplay.innerHTML = `${tph}<span class="unit">/hr</span>`;
-                }
-            } else {
-                actualAhtDisplay.innerHTML = `--<span class="unit">s</span>`;
-                throughputDisplay.innerHTML = `--<span class="unit">/hr</span>`;
-            }
-        }
+const display=document.getElementById("timer-display");
+const caseTimer=document.getElementById("case-timer");
+const ahtInput=document.getElementById("aht-input");
+const actualAht=document.getElementById("actual-aht");
+const throughput=document.getElementById("throughput");
+const caseProgress=document.getElementById("case-progress");
+const caseTable=document.getElementById("case-table");
+const sound=document.getElementById("case-sound");
+const soundBtn=document.getElementById("sound-btn");
 
-        function startTimer() {
-            if (!isRunning) {
-                isRunning = true;
-                interval = setInterval(tick, 1000);
-                
-                // UI Updates
-                statusText.textContent = "Production";
-                statusText.style.color = "#34d399";
-                statusInd.classList.add('status-on');
-                
-                pauseBtn.textContent = "Pause";
-                pauseBtn.classList.add('active'); // Borde naranja
-            }
-        }
+function tick(){
+    balanceSeconds--;
+    totalSecondsWorked++;
+    caseSeconds++;
+    updateDisplay();
+    updateCaseTimer();
+    updateStats();
+}
 
-        function togglePause() {
-            if (isRunning) {
-                // Pausar
-                clearInterval(interval);
-                isRunning = false;
-                
-                statusText.textContent = "Break / Aux";
-                statusText.style.color = "#8a8a9b";
-                statusInd.classList.remove('status-on');
-                
-                pauseBtn.textContent = "Resume";
-                pauseBtn.classList.remove('active');
-            } else {
-                // Reanudar
-                startTimer();
-            }
-        }
+function startTimer(){
+    if(!isRunning){
+        interval=setInterval(tick,1000);
+        isRunning=true;
+    }
+}
 
-        function addCase() {
-            // 1. Animación del botón
-            addBtn.classList.remove('animate');
-            void addBtn.offsetWidth; // Trigger reflow para reiniciar anim
-            addBtn.classList.add('animate');
+function togglePause(){
+    if(isRunning){clearInterval(interval);isRunning=false;}
+    else startTimer();
+}
 
-            // 2. Animación del timer
-            display.classList.remove('flash-anim');
-            void display.offsetWidth;
-            display.classList.add('flash-anim');
+function addCase(){
+    if(soundOn){ sound.currentTime=0; sound.play(); }
 
-            // 3. Lógica de negocio
-            const timeToAdd = parseInt(ahtInput.value) || 60;
-            balanceSeconds += timeToAdd;
-            cases++;
-            caseCountDisplay.textContent = cases;
+    if(cases>0){
+        const duration=totalSecondsWorked-lastCaseTime;
+        caseHistory.unshift({number:cases,time:duration});
+        if(caseHistory.length>5)caseHistory.pop();
+    }
+    lastCaseTime=totalSecondsWorked;
 
-            // 4. Actualizar inmediatamente stats iniciales para este caso
-            updateStats(); 
-            startTimer(); // Asegurar que corre
-            updateDisplay();
-        }
+    caseSeconds=0;
+    balanceSeconds+=parseInt(ahtInput.value)||60;
+    cases++;
+    caseProgress.textContent=`${cases} / 450`;
+    renderTable();
+    startTimer();
+}
 
-        function resetTimer() {
-            if(confirm("Reset session stats?")) {
-                clearInterval(interval);
-                isRunning = false;
-                
-                balanceSeconds = 0;
-                totalSecondsWorked = 0;
-                cases = 0;
-                
-                caseCountDisplay.textContent = 0;
-                updateDisplay();
-                updateStats();
-                
-                statusText.textContent = "Ready";
-                statusText.style.color = "#8a8a9b";
-                statusInd.classList.remove('status-on');
-                pauseBtn.textContent = "Start";
-                pauseBtn.classList.remove('active');
-            }
-        }
+function renderTable(){
+    caseTable.innerHTML="";
+    const goal=parseInt(ahtInput.value)||60;
 
-        // Init
-        updateDisplay();
-    </script>
+    caseHistory.forEach(c=>{
+        const color=c.time<=goal?"#34d399":"#f87171";
+        const min=(c.time/60).toFixed(2);
+        caseTable.innerHTML+=`
+            <div class="case-row">
+                <span class="case-number">Case #${c.number}</span>
+                <span class="case-time" style="color:${color}">
+                    ${c.time}s <span style="opacity:.6;font-weight:500">(${min}m)</span>
+                </span>
+            </div>`;
+    });
+}
+
+function updateDisplay(){
+    let s=Math.abs(balanceSeconds);
+    display.textContent=(balanceSeconds<0?"-":"")+String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+    display.className=balanceSeconds>=0?"positive":"negative";
+}
+
+function updateCaseTimer(){
+    caseTimer.textContent=String(Math.floor(caseSeconds/60)).padStart(2,"0")+":"+String(caseSeconds%60).padStart(2,"0");
+}
+
+function updateStats(){
+    if(cases>0 && totalSecondsWorked>0){
+        actualAht.textContent=Math.round(totalSecondsWorked/cases);
+        throughput.textContent=((cases/totalSecondsWorked)*3600).toFixed(1);
+    } else {
+        actualAht.textContent="--";
+        throughput.textContent="--";
+    }
+}
+
+function resetTimer(){
+    clearInterval(interval);
+    isRunning=false;
+    balanceSeconds=0;
+    totalSecondsWorked=0;
+    caseSeconds=0;
+    cases=0;
+    lastCaseTime=0;
+    caseHistory=[];
+    caseProgress.textContent="0 / 450";
+    renderTable();
+    updateDisplay();
+    updateCaseTimer();
+    updateStats();
+}
+
+document.addEventListener("keydown",e=>{
+    if(e.key==="Enter") addCase();
+});
+
+soundBtn.onclick=()=>{
+    soundOn=!soundOn;
+    soundBtn.textContent=soundOn?"🔊":"🔇";
+};
+
+function updateClock(){
+    const now=new Date().toLocaleTimeString("es-CO",{timeZone:"America/Bogota"});
+    document.getElementById("clock").textContent=now;
+}
+setInterval(updateClock,1000);
+updateClock();
+
+window.addEventListener("beforeunload",e=>{
+    if(cases>0||totalSecondsWorked>0){
+        e.preventDefault();
+        e.returnValue="";
+    }
+});
+</script>
+
 </body>
 </html>
