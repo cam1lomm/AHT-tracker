@@ -6,20 +6,21 @@
     <title>AHT Pro Manager</title>
     <style>
         :root {
-            --bg-color: #09090b; /* Negro profundo */
-            --card-bg: #13131a;  /* Gris muy oscuro */
+            --bg-color: #09090b;
+            --card-bg: #13131a;
             --border-color: #272733;
             --text-main: #e0e0e0;
             --text-muted: #8a8a9b;
             
             /* Colores de marca */
-            --brand-primary: #8b5cf6; /* Violeta vibrante */
+            --brand-primary: #8b5cf6; 
             --brand-glow: rgba(139, 92, 246, 0.5);
             
             /* Estados */
             --state-positive: #a78bfa; /* Lila claro */
-            --state-negative: #ff0000; /* Rojo */
-            --state-active: #34d399;   /* Verde menta para 'Production' */
+            --state-negative: #f87171; /* Rojo suave */
+            --state-active: #34d399;   /* Verde menta */
+            --timer-current: #22d3ee;  /* Cyan para el timer secundario */
             
             --btn-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
         }
@@ -33,6 +34,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            user-select: none; /* Evita seleccionar texto al hacer clicks rápidos */
         }
 
         .container {
@@ -64,7 +66,7 @@
             justify-content: center;
             align-items: center;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             font-size: 0.85rem;
             color: var(--text-muted);
         }
@@ -87,12 +89,20 @@
             box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
         }
 
-        /* Temporizador */
+        /* Área de Temporizadores */
+        .timers-area {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Temporizador Principal (Balance) */
         #timer-display {
             font-size: 5rem;
             font-weight: 800;
             line-height: 1;
-            margin: 10px 0 25px 0;
             font-variant-numeric: tabular-nums;
             transition: color 0.3s, transform 0.1s;
         }
@@ -100,10 +110,34 @@
         .positive { color: var(--state-positive); text-shadow: 0 0 30px rgba(167, 139, 250, 0.3); }
         .negative { color: var(--state-negative); text-shadow: 0 0 30px rgba(248, 113, 113, 0.3); }
 
-        /* Efecto Flash para el timer */
+        /* Temporizador Secundario (Caso Actual) */
+        .current-case-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 5px;
+        }
+        
+        .cc-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        #current-case-display {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--timer-current);
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+        }
+
+        /* Animaciones */
         @keyframes timerFlash {
             0% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.05); filter: brightness(1.5); }
+            50% { transform: scale(1.02); filter: brightness(1.3); }
             100% { transform: scale(1); filter: brightness(1); }
         }
         .flash-anim { animation: timerFlash 0.3s ease-out; }
@@ -120,12 +154,7 @@
             border: 1px solid var(--border-color);
         }
 
-        .stat-box {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        
+        .stat-box { display: flex; flex-direction: column; gap: 4px; }
         .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
         .stat-value { font-size: 1.4rem; font-weight: 700; color: #fff; }
         .unit { font-size: 0.8rem; font-weight: 400; color: var(--text-muted); margin-left: 2px;}
@@ -147,7 +176,6 @@
 
         button:active { transform: scale(0.98); }
 
-        /* Botón New Case con gradiente */
         .btn-add {
             background: var(--btn-gradient);
             color: white;
@@ -156,7 +184,7 @@
         }
         .btn-add:hover { filter: brightness(1.1); }
 
-        /* Animación Ripple Sutil */
+        /* Animación Ripple */
         .btn-add::after {
             content: '';
             position: absolute;
@@ -168,12 +196,10 @@
             transform: scale(1, 1) translate(-50%);
             transform-origin: 50% 50%;
         }
-
         @keyframes ripple {
             0% { transform: scale(0, 0); opacity: 0.5; }
             100% { transform: scale(50, 50); opacity: 0; }
         }
-
         .btn-add.animate::after { animation: ripple 0.5s ease-out; }
 
         .btn-pause {
@@ -228,7 +254,14 @@
             <input type="number" id="aht-input" value="60"> <span>sec</span>
         </div>
 
-        <div id="timer-display" class="positive">00:00</div>
+        <div class="timers-area">
+            <div id="timer-display" class="positive">00:00</div>
+            
+            <div class="current-case-wrapper">
+                <div class="cc-label">Current Case Duration</div>
+                <div id="current-case-display">00:00</div>
+            </div>
+        </div>
 
         <div class="live-stats">
             <div class="stat-box">
@@ -257,47 +290,59 @@
     </div>
 
     <script>
-        let balanceSeconds = 0; // Banco de tiempo (Meta - Real)
-        let totalSecondsWorked = 0; // Tiempo real transcurrido en "Production"
+        let balanceSeconds = 0;       // Banco de tiempo
+        let totalSecondsWorked = 0;   // Tiempo total producción
+        let currentCaseSeconds = 0;   // NUEVO: Contador del caso actual
+        
         let isRunning = false;
         let interval = null;
         let cases = 0;
 
         // Elementos DOM
         const display = document.getElementById('timer-display');
+        const currentCaseDisplay = document.getElementById('current-case-display');
+        
         const statusText = document.getElementById('status-text');
         const statusInd = document.getElementById('status-indicator');
         const pauseBtn = document.getElementById('btn-pause');
         const addBtn = document.getElementById('btn-add');
         const caseCountDisplay = document.getElementById('case-count');
         const ahtInput = document.getElementById('aht-input');
-        
-        // Elementos de Stats
         const actualAhtDisplay = document.getElementById('actual-aht');
         const throughputDisplay = document.getElementById('throughput');
 
-        // Función principal que corre cada segundo
+        // PROTECCIÓN CONTRA CIERRE ACCIDENTAL
+        window.addEventListener('beforeunload', function (e) {
+            // Solo avisa si la sesión está activa o hay datos
+            if (cases > 0 || isRunning) {
+                e.preventDefault();
+                e.returnValue = ''; // Requerido por Chrome
+            }
+        });
+
         function tick() {
-            balanceSeconds--;       // Resta del banco (para el timer visual)
-            totalSecondsWorked++;   // Suma al tiempo real trabajado (para stats)
-            
+            balanceSeconds--;
+            totalSecondsWorked++;
+            currentCaseSeconds++; // Incrementamos el timer del caso actual
+
             updateDisplay();
+            updateCurrentCaseDisplay(); // Actualizamos visualmente el timer secundario
             updateStats();
         }
 
-        // Formatea y muestra el tiempo grande
-        function updateDisplay() {
-            const isNegative = balanceSeconds < 0;
-            const absSeconds = Math.abs(balanceSeconds);
+        // Formatea MM:SS
+        function formatTime(totalSeconds) {
+            const absSeconds = Math.abs(totalSeconds);
             const minutes = Math.floor(absSeconds / 60);
             const seconds = absSeconds % 60;
+            return (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+        }
 
-            const formattedTime = 
-                (isNegative ? "-" : "") + 
-                (minutes < 10 ? "0" : "") + minutes + ":" + 
-                (seconds < 10 ? "0" : "") + seconds;
-
-            display.textContent = formattedTime;
+        function updateDisplay() {
+            const isNegative = balanceSeconds < 0;
+            const formatted = (isNegative ? "-" : "") + formatTime(balanceSeconds);
+            
+            display.textContent = formatted;
 
             if (balanceSeconds >= 0) {
                 display.classList.remove('negative');
@@ -308,16 +353,16 @@
             }
         }
 
-        // Calcula y muestra AHT Real y Throughput
+        // NUEVA FUNCIÓN: Actualizar timer secundario
+        function updateCurrentCaseDisplay() {
+            currentCaseDisplay.textContent = formatTime(currentCaseSeconds);
+        }
+
         function updateStats() {
             if (cases > 0) {
-                // AHT Real = Tiempo Total Trabajado / Casos
                 const realAHT = (totalSecondsWorked / cases).toFixed(0);
                 actualAhtDisplay.innerHTML = `${realAHT}<span class="unit">s</span>`;
 
-                // Throughput = (Casos / Tiempo Total en Segundos) * 3600
-                // (Casos proyectados por hora)
-                // Evitamos división por cero al inicio
                 if (totalSecondsWorked > 0) {
                     const tph = ((cases / totalSecondsWorked) * 3600).toFixed(1);
                     throughputDisplay.innerHTML = `${tph}<span class="unit">/hr</span>`;
@@ -333,19 +378,17 @@
                 isRunning = true;
                 interval = setInterval(tick, 1000);
                 
-                // UI Updates
                 statusText.textContent = "Production";
                 statusText.style.color = "#34d399";
                 statusInd.classList.add('status-on');
                 
                 pauseBtn.textContent = "Pause";
-                pauseBtn.classList.add('active'); // Borde naranja
+                pauseBtn.classList.add('active');
             }
         }
 
         function togglePause() {
             if (isRunning) {
-                // Pausar
                 clearInterval(interval);
                 isRunning = false;
                 
@@ -356,45 +399,49 @@
                 pauseBtn.textContent = "Resume";
                 pauseBtn.classList.remove('active');
             } else {
-                // Reanudar
                 startTimer();
             }
         }
 
         function addCase() {
-            // 1. Animación del botón
+            // Animaciones
             addBtn.classList.remove('animate');
-            void addBtn.offsetWidth; // Trigger reflow para reiniciar anim
+            void addBtn.offsetWidth;
             addBtn.classList.add('animate');
 
-            // 2. Animación del timer
             display.classList.remove('flash-anim');
             void display.offsetWidth;
             display.classList.add('flash-anim');
 
-            // 3. Lógica de negocio
+            // Lógica
             const timeToAdd = parseInt(ahtInput.value) || 60;
             balanceSeconds += timeToAdd;
             cases++;
+            
+            // RESET DEL TIMER SECUNDARIO
+            currentCaseSeconds = 0; 
+            updateCurrentCaseDisplay();
+
             caseCountDisplay.textContent = cases;
 
-            // 4. Actualizar inmediatamente stats iniciales para este caso
             updateStats(); 
-            startTimer(); // Asegurar que corre
+            startTimer(); 
             updateDisplay();
         }
 
         function resetTimer() {
-            if(confirm("Reset session stats?")) {
+            if(confirm("Are you sure you want to reset all session data?")) {
                 clearInterval(interval);
                 isRunning = false;
                 
                 balanceSeconds = 0;
                 totalSecondsWorked = 0;
+                currentCaseSeconds = 0; // Reset secundario
                 cases = 0;
                 
                 caseCountDisplay.textContent = 0;
                 updateDisplay();
+                updateCurrentCaseDisplay();
                 updateStats();
                 
                 statusText.textContent = "Ready";
@@ -407,6 +454,7 @@
 
         // Init
         updateDisplay();
+        updateCurrentCaseDisplay();
     </script>
 </body>
 </html>
