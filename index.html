@@ -14,13 +14,12 @@
             
             /* Colores de marca */
             --brand-primary: #8b5cf6; 
-            --brand-glow: rgba(139, 92, 246, 0.5);
             
             /* Estados */
-            --state-positive: #a78bfa; /* Lila claro */
-            --state-negative: #ff0000; /* Rojo suave */
-            --state-active: #34d399;   /* Verde menta */
-            --timer-current: #22d3ee;  /* Cyan para el timer secundario */
+            --state-positive: #a78bfa; 
+            --state-negative: #ff0000; 
+            --state-active: #34d399;   
+            --timer-current: #22d3ee;  
             
             --btn-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
         }
@@ -34,7 +33,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            user-select: none; /* Evita seleccionar texto al hacer clicks rápidos */
+            user-select: none; 
         }
 
         .container {
@@ -98,7 +97,6 @@
             gap: 5px;
         }
 
-        /* Temporizador Principal (Balance) */
         #timer-display {
             font-size: 5rem;
             font-weight: 800;
@@ -110,7 +108,6 @@
         .positive { color: var(--state-positive); text-shadow: 0 0 30px rgba(167, 139, 250, 0.3); }
         .negative { color: var(--state-negative); text-shadow: 0 0 30px rgba(248, 113, 113, 0.3); }
 
-        /* Temporizador Secundario (Caso Actual) */
         .current-case-wrapper {
             display: flex;
             flex-direction: column;
@@ -134,7 +131,6 @@
             text-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
         }
 
-        /* Animaciones */
         @keyframes timerFlash {
             0% { transform: scale(1); filter: brightness(1); }
             50% { transform: scale(1.02); filter: brightness(1.3); }
@@ -184,7 +180,6 @@
         }
         .btn-add:hover { filter: brightness(1.1); }
 
-        /* Animación Ripple */
         .btn-add::after {
             content: '';
             position: absolute;
@@ -214,13 +209,59 @@
             background: rgba(245, 158, 11, 0.1); 
         }
 
-        .btn-reset {
+        .btn-edit {
             background: transparent;
             color: var(--text-muted);
-            font-size: 0.8rem;
-            padding: 10px;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            font-size: 0.9rem;
         }
-        .btn-reset:hover { color: var(--state-negative); }
+        .btn-edit:hover { background: #1a1a24; color: #fff; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            border-radius: 20px;
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+        }
+
+        .modal h2 { margin: 0; font-size: 1.1rem; color: #fff; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;}
+        
+        .input-group { display: flex; justify-content: space-between; align-items: center; }
+        .input-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500;}
+        .modal input { width: 80px; }
+
+        .modal-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-save { flex: 1; background: var(--state-active); color: #000; padding: 12px; border-radius: 10px; font-weight: bold; }
+        .btn-cancel { flex: 1; background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 12px; border-radius: 10px; }
+        
+        .btn-danger {
+            margin-top: 5px;
+            background: transparent;
+            color: var(--state-negative);
+            border: 1px dashed var(--state-negative);
+            padding: 10px;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        .btn-danger:hover { opacity: 1; background: rgba(255,0,0,0.1); }
 
         /* Footer Info */
         .footer-info {
@@ -277,7 +318,7 @@
         <div class="controls">
             <button class="btn-add" id="btn-add" onclick="addCase()">+ NEW CASE</button>
             <button class="btn-pause" id="btn-pause" onclick="togglePause()">Start / Resume</button>
-            <button class="btn-reset" onclick="resetTimer()">Reset Session</button>
+            <button class="btn-edit" onclick="openModal()">⚙️ Edit / Restore Session</button>
         </div>
 
         <div class="footer-info">
@@ -287,12 +328,35 @@
                 <span id="status-text">Ready</span>
             </div>
         </div>
+
+        <div class="modal-overlay" id="edit-modal">
+            <div class="modal">
+                <h2>Restore Data</h2>
+                
+                <div class="input-group">
+                    <label>Total Cases Done:</label>
+                    <input type="number" id="edit-cases" min="0">
+                </div>
+                
+                <div class="input-group">
+                    <label>Total Minutes Worked:</label>
+                    <input type="number" id="edit-time" min="0">
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button class="btn-save" onclick="saveSession()">Update</button>
+                </div>
+
+                <button class="btn-danger" onclick="resetTimer()">Reset All Data to Zero</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        let balanceSeconds = 0;       // Banco de tiempo
-        let totalSecondsWorked = 0;   // Tiempo total producción
-        let currentCaseSeconds = 0;   // NUEVO: Contador del caso actual
+        let balanceSeconds = 0;       
+        let totalSecondsWorked = 0;   
+        let currentCaseSeconds = 0;   
         
         let isRunning = false;
         let interval = null;
@@ -301,7 +365,6 @@
         // Elementos DOM
         const display = document.getElementById('timer-display');
         const currentCaseDisplay = document.getElementById('current-case-display');
-        
         const statusText = document.getElementById('status-text');
         const statusInd = document.getElementById('status-indicator');
         const pauseBtn = document.getElementById('btn-pause');
@@ -310,27 +373,29 @@
         const ahtInput = document.getElementById('aht-input');
         const actualAhtDisplay = document.getElementById('actual-aht');
         const throughputDisplay = document.getElementById('throughput');
+        
+        // Elementos Modal
+        const modal = document.getElementById('edit-modal');
+        const editCasesInput = document.getElementById('edit-cases');
+        const editTimeInput = document.getElementById('edit-time');
 
-        // PROTECCIÓN CONTRA CIERRE ACCIDENTAL
         window.addEventListener('beforeunload', function (e) {
-            // Solo avisa si la sesión está activa o hay datos
             if (cases > 0 || isRunning) {
                 e.preventDefault();
-                e.returnValue = ''; // Requerido por Chrome
+                e.returnValue = ''; 
             }
         });
 
         function tick() {
             balanceSeconds--;
             totalSecondsWorked++;
-            currentCaseSeconds++; // Incrementamos el timer del caso actual
+            currentCaseSeconds++; 
 
             updateDisplay();
-            updateCurrentCaseDisplay(); // Actualizamos visualmente el timer secundario
+            updateCurrentCaseDisplay(); 
             updateStats();
         }
 
-        // Formatea MM:SS
         function formatTime(totalSeconds) {
             const absSeconds = Math.abs(totalSeconds);
             const minutes = Math.floor(absSeconds / 60);
@@ -353,7 +418,6 @@
             }
         }
 
-        // NUEVA FUNCIÓN: Actualizar timer secundario
         function updateCurrentCaseDisplay() {
             currentCaseDisplay.textContent = formatTime(currentCaseSeconds);
         }
@@ -404,7 +468,6 @@
         }
 
         function addCase() {
-            // Animaciones
             addBtn.classList.remove('animate');
             void addBtn.offsetWidth;
             addBtn.classList.add('animate');
@@ -413,12 +476,10 @@
             void display.offsetWidth;
             display.classList.add('flash-anim');
 
-            // Lógica
             const timeToAdd = parseInt(ahtInput.value) || 60;
             balanceSeconds += timeToAdd;
             cases++;
             
-            // RESET DEL TIMER SECUNDARIO
             currentCaseSeconds = 0; 
             updateCurrentCaseDisplay();
 
@@ -429,14 +490,47 @@
             updateDisplay();
         }
 
+        /* Lógica del Modal */
+        function openModal() {
+            if (isRunning) togglePause(); // Pausa automática para que no corra el tiempo mientras editas
+            
+            editCasesInput.value = cases;
+            editTimeInput.value = Math.floor(totalSecondsWorked / 60); // Convierte segundos actuales a minutos
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        function saveSession() {
+            const newCases = parseInt(editCasesInput.value) || 0;
+            const newMinutes = parseInt(editTimeInput.value) || 0;
+            const goal = parseInt(ahtInput.value) || 60;
+
+            cases = newCases;
+            totalSecondsWorked = newMinutes * 60; // Convierte de vuelta a segundos
+            
+            // Fórmula exacta: (Casos * Meta) - Tiempo total real trabajado
+            balanceSeconds = (cases * goal) - totalSecondsWorked;
+            currentCaseSeconds = 0; // Se asume que al restaurar, estás empezando un caso o en pausa
+            
+            caseCountDisplay.textContent = cases;
+            updateDisplay();
+            updateCurrentCaseDisplay();
+            updateStats();
+            
+            closeModal();
+        }
+
         function resetTimer() {
-            if(confirm("Are you sure you want to reset all session data?")) {
+            if(confirm("Are you sure you want to completely erase today's data?")) {
                 clearInterval(interval);
                 isRunning = false;
                 
                 balanceSeconds = 0;
                 totalSecondsWorked = 0;
-                currentCaseSeconds = 0; // Reset secundario
+                currentCaseSeconds = 0; 
                 cases = 0;
                 
                 caseCountDisplay.textContent = 0;
@@ -449,6 +543,8 @@
                 statusInd.classList.remove('status-on');
                 pauseBtn.textContent = "Start";
                 pauseBtn.classList.remove('active');
+                
+                closeModal();
             }
         }
 
