@@ -361,6 +361,9 @@
         let isRunning = false;
         let interval = null;
         let cases = 0;
+        
+        // Almacena la marca de tiempo exacta del último refresco
+        let lastTickTime = null;
 
         // Elementos DOM
         const display = document.getElementById('timer-display');
@@ -386,14 +389,30 @@
             }
         });
 
-        function tick() {
-            balanceSeconds--;
-            totalSecondsWorked++;
-            currentCaseSeconds++; 
+        // Evento para detectar cuando la pestaña vuelve a ser visible tras cambiar de pestaña o desbloquear
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && isRunning) {
+                tick();
+            }
+        });
 
-            updateDisplay();
-            updateCurrentCaseDisplay(); 
-            updateStats();
+        function tick() {
+            if (!isRunning) return;
+
+            const now = Date.now();
+            const deltaSeconds = Math.floor((now - lastTickTime) / 1000);
+
+            if (deltaSeconds > 0) {
+                balanceSeconds -= deltaSeconds;
+                totalSecondsWorked += deltaSeconds;
+                currentCaseSeconds += deltaSeconds; 
+
+                lastTickTime += deltaSeconds * 1000;
+
+                updateDisplay();
+                updateCurrentCaseDisplay(); 
+                updateStats();
+            }
         }
 
         function formatTime(totalSeconds) {
@@ -440,7 +459,8 @@
         function startTimer() {
             if (!isRunning) {
                 isRunning = true;
-                interval = setInterval(tick, 1000);
+                lastTickTime = Date.now();
+                interval = setInterval(tick, 200);
                 
                 statusText.textContent = "Production";
                 statusText.style.color = "#34d399";
@@ -453,6 +473,7 @@
 
         function togglePause() {
             if (isRunning) {
+                tick();
                 clearInterval(interval);
                 isRunning = false;
                 
@@ -492,10 +513,10 @@
 
         /* Lógica del Modal */
         function openModal() {
-            if (isRunning) togglePause(); // Pausa automática para que no corra el tiempo mientras editas
+            if (isRunning) togglePause();
             
             editCasesInput.value = cases;
-            editTimeInput.value = Math.floor(totalSecondsWorked / 60); // Convierte segundos actuales a minutos
+            editTimeInput.value = Math.floor(totalSecondsWorked / 60); 
             modal.style.display = 'flex';
         }
 
@@ -509,11 +530,10 @@
             const goal = parseInt(ahtInput.value) || 60;
 
             cases = newCases;
-            totalSecondsWorked = newMinutes * 60; // Convierte de vuelta a segundos
+            totalSecondsWorked = newMinutes * 60; 
             
-            // Fórmula exacta: (Casos * Meta) - Tiempo total real trabajado
             balanceSeconds = (cases * goal) - totalSecondsWorked;
-            currentCaseSeconds = 0; // Se asume que al restaurar, estás empezando un caso o en pausa
+            currentCaseSeconds = 0; 
             
             caseCountDisplay.textContent = cases;
             updateDisplay();
