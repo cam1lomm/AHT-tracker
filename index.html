@@ -141,7 +141,7 @@
         /* Live Stats Grid */
         .live-stats {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 10px;
             margin-bottom: 25px;
             background: #1a1a24;
@@ -312,6 +312,11 @@
             <div class="stat-box">
                 <span class="stat-label">Throughput</span>
                 <span class="stat-value" id="throughput">--<span class="unit">/hr</span></span>
+            </div>
+            <!-- Nueva caja de hora local -->
+            <div class="stat-box">
+                <span class="stat-label">Time (COL)</span>
+                <span class="stat-value" id="col-time">--:--</span>
             </div>
         </div>
 
@@ -567,6 +572,23 @@
                 closeModal();
             }
         }
+
+        // --- Reloj en vivo de Colombia ---
+        function updateColombiaTime() {
+            const timeOptions = { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', hour12: true };
+            const timeParts = new Intl.DateTimeFormat('en-US', timeOptions).formatToParts(new Date());
+            
+            const hours = timeParts.find(p => p.type === 'hour').value;
+            const minutes = timeParts.find(p => p.type === 'minute').value;
+            const ampm = timeParts.find(p => p.type === 'dayPeriod').value;
+
+            // Se inyecta manteniendo la clase .unit de tu diseño para el AM/PM
+            document.getElementById('col-time').innerHTML = `${hours}:${minutes}<span class="unit">${ampm}</span>`;
+        }
+
+        // Iniciar de inmediato y refrescar cada segundo
+        updateColombiaTime();
+        setInterval(updateColombiaTime, 1000);
 
         // Init
         updateDisplay();
