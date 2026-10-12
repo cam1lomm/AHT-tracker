@@ -11,16 +11,16 @@
             --border-color: #272733;
             --text-main: #e0e0e0;
             --text-muted: #8a8a9b;
-            
+
             /* Colores de marca */
-            --brand-primary: #8b5cf6; 
-            
+            --brand-primary: #8b5cf6;
+
             /* Estados */
-            --state-positive: #a78bfa; 
-            --state-negative: #ff0000; 
-            --state-active: #34d399;   
-            --timer-current: #22d3ee;  
-            
+            --state-positive: #a78bfa;
+            --state-negative: #ff0000;
+            --state-active: #34d399;
+            --timer-current: #22d3ee;
+
             --btn-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
         }
 
@@ -33,7 +33,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            user-select: none; 
+            user-select: none;
         }
 
         .container {
@@ -50,12 +50,12 @@
         }
 
         /* Header */
-        h1 { 
+        h1 {
             margin: 0 0 20px 0;
-            font-size: 0.9rem; 
-            text-transform: uppercase; 
-            letter-spacing: 3px; 
-            color: var(--text-muted); 
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--text-muted);
             font-weight: 600;
         }
 
@@ -82,13 +82,14 @@
             font-weight: bold;
             transition: 0.2s;
         }
+
         input[type="number"]:focus {
             outline: none;
             border-color: var(--brand-primary);
             box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
         }
 
-        /* Área de Temporizadores */
+        /* Área de temporizadores */
         .timers-area {
             margin: 20px 0;
             display: flex;
@@ -105,8 +106,15 @@
             transition: color 0.3s, transform 0.1s;
         }
 
-        .positive { color: var(--state-positive); text-shadow: 0 0 30px rgba(167, 139, 250, 0.3); }
-        .negative { color: var(--state-negative); text-shadow: 0 0 30px rgba(248, 113, 113, 0.3); }
+        .positive {
+            color: var(--state-positive);
+            text-shadow: 0 0 30px rgba(167, 139, 250, 0.3);
+        }
+
+        .negative {
+            color: var(--state-negative);
+            text-shadow: 0 0 30px rgba(248, 113, 113, 0.3);
+        }
 
         .current-case-wrapper {
             display: flex;
@@ -114,7 +122,7 @@
             align-items: center;
             margin-top: 5px;
         }
-        
+
         .cc-label {
             font-size: 0.7rem;
             text-transform: uppercase;
@@ -132,16 +140,30 @@
         }
 
         @keyframes timerFlash {
-            0% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.02); filter: brightness(1.3); }
-            100% { transform: scale(1); filter: brightness(1); }
-        }
-        .flash-anim { animation: timerFlash 0.3s ease-out; }
+            0% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
 
-        /* Live Stats Grid */
+            50% {
+                transform: scale(1.02);
+                filter: brightness(1.3);
+            }
+
+            100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        .flash-anim {
+            animation: timerFlash 0.3s ease-out;
+        }
+
+        /* Estadísticas */
         .live-stats {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
             margin-bottom: 25px;
             background: #1a1a24;
@@ -150,14 +172,39 @@
             border: 1px solid var(--border-color);
         }
 
-        .stat-box { display: flex; flex-direction: column; gap: 4px; }
-        .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;}
-        .stat-value { font-size: 1.4rem; font-weight: 700; color: #fff; }
-        .unit { font-size: 0.8rem; font-weight: 400; color: var(--text-muted); margin-left: 2px;}
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .unit {
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: var(--text-muted);
+            margin-left: 2px;
+        }
 
         /* Controles */
-        .controls { display: flex; flex-direction: column; gap: 12px; }
-        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
         button {
             border: none;
             border-radius: 12px;
@@ -170,7 +217,9 @@
             transition: transform 0.1s, filter 0.2s;
         }
 
-        button:active { transform: scale(0.98); }
+        button:active {
+            transform: scale(0.98);
+        }
 
         .btn-add {
             background: var(--btn-gradient);
@@ -178,35 +227,55 @@
             box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
             z-index: 1;
         }
-        .btn-add:hover { filter: brightness(1.1); }
+
+        .btn-add:hover {
+            filter: brightness(1.1);
+        }
 
         .btn-add::after {
             content: '';
             position: absolute;
-            top: 50%; left: 50%;
-            width: 5px; height: 5px;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
             background: rgba(255, 255, 255, 0.5);
             opacity: 0;
             border-radius: 100%;
             transform: scale(1, 1) translate(-50%);
             transform-origin: 50% 50%;
         }
+
         @keyframes ripple {
-            0% { transform: scale(0, 0); opacity: 0.5; }
-            100% { transform: scale(50, 50); opacity: 0; }
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(50, 50);
+                opacity: 0;
+            }
         }
-        .btn-add.animate::after { animation: ripple 0.5s ease-out; }
+
+        .btn-add.animate::after {
+            animation: ripple 0.5s ease-out;
+        }
 
         .btn-pause {
             background: #272733;
             color: #fff;
             border: 1px solid transparent;
         }
-        .btn-pause:hover { background: #323242; }
-        .btn-pause.active { 
-            border: 1px solid #f59e0b; 
-            color: #f59e0b; 
-            background: rgba(245, 158, 11, 0.1); 
+
+        .btn-pause:hover {
+            background: #323242;
+        }
+
+        .btn-pause.active {
+            border: 1px solid #f59e0b;
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
         }
 
         .btn-edit {
@@ -216,12 +285,19 @@
             padding: 12px;
             font-size: 0.9rem;
         }
-        .btn-edit:hover { background: #1a1a24; color: #fff; }
 
-        /* Modal Styles */
+        .btn-edit:hover {
+            background: #1a1a24;
+            color: #fff;
+        }
+
+        /* Ventana de restauración */
         .modal-overlay {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0,0,0,0.85);
             backdrop-filter: blur(5px);
             display: none;
@@ -242,16 +318,54 @@
             text-align: left;
         }
 
-        .modal h2 { margin: 0; font-size: 1.1rem; color: #fff; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;}
-        
-        .input-group { display: flex; justify-content: space-between; align-items: center; }
-        .input-group label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500;}
-        .modal input { width: 80px; }
+        .modal h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #fff;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
 
-        .modal-actions { display: flex; gap: 10px; margin-top: 10px; }
-        .btn-save { flex: 1; background: var(--state-active); color: #000; padding: 12px; border-radius: 10px; font-weight: bold; }
-        .btn-cancel { flex: 1; background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 12px; border-radius: 10px; }
-        
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .modal input {
+            width: 80px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-save {
+            flex: 1;
+            background: var(--state-active);
+            color: #000;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 12px;
+            border-radius: 10px;
+        }
+
         .btn-danger {
             margin-top: 5px;
             background: transparent;
@@ -261,9 +375,13 @@
             font-size: 0.8rem;
             opacity: 0.8;
         }
-        .btn-danger:hover { opacity: 1; background: rgba(255,0,0,0.1); }
 
-        /* Footer Info */
+        .btn-danger:hover {
+            opacity: 1;
+            background: rgba(255,0,0,0.1);
+        }
+
+        /* Información inferior */
         .footer-info {
             margin-top: 20px;
             font-size: 0.8rem;
@@ -277,27 +395,33 @@
 
         #status-indicator {
             display: inline-block;
-            width: 8px; height: 8px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background-color: #555;
             margin-right: 5px;
         }
-        .status-on { background-color: var(--state-active) !important; box-shadow: 0 0 10px var(--state-active); }
+
+        .status-on {
+            background-color: var(--state-active) !important;
+            box-shadow: 0 0 10px var(--state-active);
+        }
     </style>
 </head>
-<body>
 
+<body>
     <div class="container">
         <h1>AHT Control Center</h1>
-        
+
         <div class="settings">
             <label>Goal AHT:</label>
-            <input type="number" id="aht-input" value="60"> <span>sec</span>
+            <input type="number" id="aht-input" value="60">
+            <span>sec</span>
         </div>
 
         <div class="timers-area">
             <div id="timer-display" class="positive">00:00</div>
-            
+
             <div class="current-case-wrapper">
                 <div class="cc-label">Current Case Duration</div>
                 <div id="current-case-display">00:00</div>
@@ -309,14 +433,10 @@
                 <span class="stat-label">Actual AHT</span>
                 <span class="stat-value" id="actual-aht">--<span class="unit">s</span></span>
             </div>
-            <div class="stat-box">
-                <span class="stat-label">Throughput</span>
-                <span class="stat-value" id="throughput">--<span class="unit">/hr</span></span>
-            </div>
-            <!-- Nueva caja de hora local -->
+
             <div class="stat-box">
                 <span class="stat-label">Time (COL)</span>
-                <span class="stat-value" id="col-time">--:--</span>
+                <span class="stat-value" id="col-time">--:--:--</span>
             </div>
         </div>
 
@@ -328,6 +448,7 @@
 
         <div class="footer-info">
             <div>Cases: <strong id="case-count" style="color:white">0</strong></div>
+
             <div style="display:flex; align-items:center;">
                 <span id="status-indicator"></span>
                 <span id="status-text">Ready</span>
@@ -337,12 +458,12 @@
         <div class="modal-overlay" id="edit-modal">
             <div class="modal">
                 <h2>Restore Data</h2>
-                
+
                 <div class="input-group">
                     <label>Total Cases Done:</label>
                     <input type="number" id="edit-cases" min="0">
                 </div>
-                
+
                 <div class="input-group">
                     <label>Total Minutes Worked:</label>
                     <input type="number" id="edit-time" min="0">
@@ -359,18 +480,18 @@
     </div>
 
     <script>
-        let balanceSeconds = 0;       
-        let totalSecondsWorked = 0;   
-        let currentCaseSeconds = 0;   
-        
+        let balanceSeconds = 0;
+        let totalSecondsWorked = 0;
+        let currentCaseSeconds = 0;
+
         let isRunning = false;
         let interval = null;
         let cases = 0;
-        
-        // Almacena la marca de tiempo exacta del último refresco
+
+        // Guarda el momento exacto de la última actualización.
         let lastTickTime = null;
 
-        // Elementos DOM
+        // Elementos del documento.
         const display = document.getElementById('timer-display');
         const currentCaseDisplay = document.getElementById('current-case-display');
         const statusText = document.getElementById('status-text');
@@ -380,9 +501,8 @@
         const caseCountDisplay = document.getElementById('case-count');
         const ahtInput = document.getElementById('aht-input');
         const actualAhtDisplay = document.getElementById('actual-aht');
-        const throughputDisplay = document.getElementById('throughput');
-        
-        // Elementos Modal
+
+        // Elementos de la ventana de restauración.
         const modal = document.getElementById('edit-modal');
         const editCasesInput = document.getElementById('edit-cases');
         const editTimeInput = document.getElementById('edit-time');
@@ -390,12 +510,12 @@
         window.addEventListener('beforeunload', function (e) {
             if (cases > 0 || isRunning) {
                 e.preventDefault();
-                e.returnValue = ''; 
+                e.returnValue = '';
             }
         });
 
-        // Evento para detectar cuando la pestaña vuelve a ser visible tras cambiar de pestaña o desbloquear
-        document.addEventListener('visibilitychange', function() {
+        // Actualiza el temporizador al volver a la pestaña.
+        document.addEventListener('visibilitychange', function () {
             if (!document.hidden && isRunning) {
                 tick();
             }
@@ -410,12 +530,12 @@
             if (deltaSeconds > 0) {
                 balanceSeconds -= deltaSeconds;
                 totalSecondsWorked += deltaSeconds;
-                currentCaseSeconds += deltaSeconds; 
+                currentCaseSeconds += deltaSeconds;
 
                 lastTickTime += deltaSeconds * 1000;
 
                 updateDisplay();
-                updateCurrentCaseDisplay(); 
+                updateCurrentCaseDisplay();
                 updateStats();
             }
         }
@@ -424,13 +544,15 @@
             const absSeconds = Math.abs(totalSeconds);
             const minutes = Math.floor(absSeconds / 60);
             const seconds = absSeconds % 60;
-            return (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+            return (minutes < 10 ? "0" : "") + minutes + ":" +
+                   (seconds < 10 ? "0" : "") + seconds;
         }
 
         function updateDisplay() {
             const isNegative = balanceSeconds < 0;
             const formatted = (isNegative ? "-" : "") + formatTime(balanceSeconds);
-            
+
             display.textContent = formatted;
 
             if (balanceSeconds >= 0) {
@@ -446,18 +568,15 @@
             currentCaseDisplay.textContent = formatTime(currentCaseSeconds);
         }
 
+        // Calcula únicamente el AHT real. Throughput fue eliminado.
         function updateStats() {
             if (cases > 0) {
                 const realAHT = (totalSecondsWorked / cases).toFixed(0);
-                actualAhtDisplay.innerHTML = `${realAHT}<span class="unit">s</span>`;
-
-                if (totalSecondsWorked > 0) {
-                    const tph = ((cases / totalSecondsWorked) * 3600).toFixed(1);
-                    throughputDisplay.innerHTML = `${tph}<span class="unit">/hr</span>`;
-                }
+                actualAhtDisplay.innerHTML =
+                    `${realAHT}<span class="unit">s</span>`;
             } else {
-                actualAhtDisplay.innerHTML = `--<span class="unit">s</span>`;
-                throughputDisplay.innerHTML = `--<span class="unit">/hr</span>`;
+                actualAhtDisplay.innerHTML =
+                    `--<span class="unit">s</span>`;
             }
         }
 
@@ -466,11 +585,11 @@
                 isRunning = true;
                 lastTickTime = Date.now();
                 interval = setInterval(tick, 200);
-                
+
                 statusText.textContent = "Production";
                 statusText.style.color = "#34d399";
                 statusInd.classList.add('status-on');
-                
+
                 pauseBtn.textContent = "Pause";
                 pauseBtn.classList.add('active');
             }
@@ -481,11 +600,11 @@
                 tick();
                 clearInterval(interval);
                 isRunning = false;
-                
+
                 statusText.textContent = "Break / Aux";
                 statusText.style.color = "#8a8a9b";
                 statusInd.classList.remove('status-on');
-                
+
                 pauseBtn.textContent = "Resume";
                 pauseBtn.classList.remove('active');
             } else {
@@ -503,25 +622,27 @@
             display.classList.add('flash-anim');
 
             const timeToAdd = parseInt(ahtInput.value) || 60;
+
             balanceSeconds += timeToAdd;
             cases++;
-            
-            currentCaseSeconds = 0; 
+
+            currentCaseSeconds = 0;
             updateCurrentCaseDisplay();
 
             caseCountDisplay.textContent = cases;
 
-            updateStats(); 
-            startTimer(); 
+            updateStats();
+            startTimer();
             updateDisplay();
         }
 
-        /* Lógica del Modal */
+        /* Lógica de restauración de sesión */
         function openModal() {
             if (isRunning) togglePause();
-            
+
             editCasesInput.value = cases;
-            editTimeInput.value = Math.floor(totalSecondsWorked / 60); 
+            editTimeInput.value = Math.floor(totalSecondsWorked / 60);
+
             modal.style.display = 'flex';
         }
 
@@ -535,62 +656,87 @@
             const goal = parseInt(ahtInput.value) || 60;
 
             cases = newCases;
-            totalSecondsWorked = newMinutes * 60; 
-            
+            totalSecondsWorked = newMinutes * 60;
+
             balanceSeconds = (cases * goal) - totalSecondsWorked;
-            currentCaseSeconds = 0; 
-            
+            currentCaseSeconds = 0;
+
             caseCountDisplay.textContent = cases;
+
             updateDisplay();
             updateCurrentCaseDisplay();
             updateStats();
-            
+
             closeModal();
         }
 
         function resetTimer() {
-            if(confirm("Are you sure you want to completely erase today's data?")) {
+            if (confirm("Are you sure you want to completely erase today's data?")) {
                 clearInterval(interval);
                 isRunning = false;
-                
+
                 balanceSeconds = 0;
                 totalSecondsWorked = 0;
-                currentCaseSeconds = 0; 
+                currentCaseSeconds = 0;
                 cases = 0;
-                
+
                 caseCountDisplay.textContent = 0;
+
                 updateDisplay();
                 updateCurrentCaseDisplay();
                 updateStats();
-                
+
                 statusText.textContent = "Ready";
                 statusText.style.color = "#8a8a9b";
                 statusInd.classList.remove('status-on');
+
                 pauseBtn.textContent = "Start";
                 pauseBtn.classList.remove('active');
-                
+
                 closeModal();
             }
         }
 
-        // --- Reloj en vivo de Colombia ---
+        // Reloj en vivo de Colombia.
         function updateColombiaTime() {
-            const timeOptions = { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', hour12: true };
-            const timeParts = new Intl.DateTimeFormat('en-US', timeOptions).formatToParts(new Date());
-            
-            const hours = timeParts.find(p => p.type === 'hour').value;
-            const minutes = timeParts.find(p => p.type === 'minute').value;
-            const ampm = timeParts.find(p => p.type === 'dayPeriod').value;
+            const timeOptions = {
+                timeZone: 'America/Bogota',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
 
-            // Se inyecta manteniendo la clase .unit de tu diseño para el AM/PM
-            document.getElementById('col-time').innerHTML = `${hours}:${minutes}<span class="unit">${ampm}</span>`;
+            const timeParts = new Intl.DateTimeFormat(
+                'en-US',
+                timeOptions
+            ).formatToParts(new Date());
+
+            const hours = timeParts.find(
+                part => part.type === 'hour'
+            ).value;
+
+            const minutes = timeParts.find(
+                part => part.type === 'minute'
+            ).value;
+
+            const seconds = timeParts.find(
+                part => part.type === 'second'
+            ).value;
+
+            const ampm = timeParts.find(
+                part => part.type === 'dayPeriod'
+            ).value;
+
+            document.getElementById('col-time').innerHTML =
+                `${hours}:${minutes}:${seconds}<span class="unit">${ampm}</span>`;
         }
 
-        // Iniciar de inmediato y refrescar cada segundo
+        // Mostrar la hora inmediatamente y actualizarla cada segundo.
         updateColombiaTime();
         setInterval(updateColombiaTime, 1000);
 
-        // Init
+        // Inicialización de los temporizadores.
         updateDisplay();
         updateCurrentCaseDisplay();
     </script>
