@@ -312,6 +312,9 @@
             padding: 25px;
             border-radius: 20px;
             width: 80%;
+            max-height: calc(100% - 32px);
+            overflow-y: auto;
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
             gap: 15px;
@@ -366,19 +369,50 @@
             border-radius: 10px;
         }
 
-        .btn-danger {
-            margin-top: 5px;
-            background: transparent;
-            color: var(--state-negative);
-            border: 1px dashed var(--state-negative);
-            padding: 10px;
-            font-size: 0.8rem;
-            opacity: 0.8;
+        .break-reminder {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(420px, calc(100% - 32px));
+            box-sizing: border-box;
+            padding: 14px 18px;
+            border: 1px solid var(--brand-primary);
+            border-radius: 14px;
+            background: #211638;
+            color: #fff;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.55);
+            z-index: 200;
+            text-align: center;
+            font-weight: 600;
         }
 
-        .btn-danger:hover {
-            opacity: 1;
-            background: rgba(255,0,0,0.1);
+        .break-reminder.visible { display: block; }
+
+        .break-settings-title {
+            margin: 8px 0 0;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+            color: #fff;
+            font-size: 0.95rem;
+        }
+
+        .modal-note {
+            margin: -8px 0 0;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .modal input[type="time"] {
+            background: #1e1e26;
+            border: 1px solid var(--border-color);
+            color: var(--brand-primary);
+            padding: 6px;
+            border-radius: 8px;
+            width: 105px;
+            font: inherit;
         }
 
         /* Información inferior */
@@ -410,6 +444,7 @@
 </head>
 
 <body>
+    <div class="break-reminder" id="break-reminder" role="status" aria-live="assertive"></div>
     <div class="container">
         <h1>AHT Control Center</h1>
 
@@ -457,7 +492,7 @@
 
         <div class="modal-overlay" id="edit-modal">
             <div class="modal">
-                <h2>Restore Data</h2>
+                <h2>Session &amp; Break Reminders</h2>
 
                 <div class="input-group">
                     <label>Total Cases Done:</label>
@@ -469,12 +504,26 @@
                     <input type="number" id="edit-time" min="0">
                 </div>
 
+                <h3 class="break-settings-title">Break schedule</h3>
+                <p class="modal-note">Enter each break start time in Colombia time. You’ll be reminded one minute before. Leave a time blank to disable it.</p>
+                <div class="input-group">
+                    <label>15-minute break:</label>
+                    <input type="time" id="break-time-1">
+                </div>
+                <div class="input-group">
+                    <label>45-minute lunch:</label>
+                    <input type="time" id="break-time-2">
+                </div>
+                <div class="input-group">
+                    <label>15-minute break:</label>
+                    <input type="time" id="break-time-3">
+                </div>
+                <p class="modal-note">The reminder appears in this page. Desktop alerts also appear if browser notifications are already enabled.</p>
+
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick="closeModal()">Cancel</button>
                     <button class="btn-save" onclick="saveSession()">Update</button>
                 </div>
-
-                <button class="btn-danger" onclick="resetTimer()">Reset All Data to Zero</button>
             </div>
         </div>
     </div>
@@ -506,6 +555,56 @@
         const modal = document.getElementById('edit-modal');
         const editCasesInput = document.getElementById('edit-cases');
         const editTimeInput = document.getElementById('edit-time');
+        const breakTimeInputs = [1, 2, 3].map(i => document.getElementById(`break-time-${i}`));
+        const breakReminder = document.getElementById('break-reminder');
+        const BREAK_STORAGE_KEY = 'aht-break-schedule';
+        const alertedBreaks = new Set();
+        let reminderTimeout = null;
+
+        function loadBreakSchedule() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(BREAK_STORAGE_KEY) || '[]');
+                breakTimeInputs.forEach((input, index) => input.value = saved[index] || '');
+            } catch (error) {
+                breakTimeInputs.forEach(input => input.value = '');
+            }
+        }
+
+        function showBreakReminder(message) {
+            breakReminder.textContent = message;
+            breakReminder.classList.add('visible');
+            clearTimeout(reminderTimeout);
+            reminderTimeout = setTimeout(() => breakReminder.classList.remove('visible'), 30000);
+
+            if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+                new Notification('AHT break reminder', { body: message });
+            }
+        }
+
+        function checkBreakReminders() {
+            const now = new Date();
+            const parts = new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'America/Bogota', year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+            }).formatToParts(now);
+            const getPart = type => parts.find(part => part.type === type).value;
+            const today = `${getPart('year')}-${getPart('month')}-${getPart('day')}`;
+            const currentMinute = `${getPart('hour')}:${getPart('minute')}`;
+
+            breakTimeInputs.forEach((input, index) => {
+                if (!input.value) return;
+                const [hour, minute] = input.value.split(':').map(Number);
+                const start = new Date(Date.UTC(2000, 0, 1, hour, minute));
+                start.setUTCMinutes(start.getUTCMinutes() - 1);
+                const reminderTime = `${String(start.getUTCHours()).padStart(2, '0')}:${String(start.getUTCMinutes()).padStart(2, '0')}`;
+                const key = `${today}-${index}-${input.value}`;
+                if (currentMinute === reminderTime && !alertedBreaks.has(key)) {
+                    alertedBreaks.add(key);
+                    const labels = ['15-minute break', '45-minute lunch', '15-minute break'];
+                    showBreakReminder(`Your ${labels[index]} starts in 1 minute.`);
+                }
+            });
+        }
 
         window.addEventListener('beforeunload', function (e) {
             if (cases > 0 || isRunning) {
@@ -642,6 +741,7 @@
 
             editCasesInput.value = cases;
             editTimeInput.value = Math.floor(totalSecondsWorked / 60);
+            loadBreakSchedule();
 
             modal.style.display = 'flex';
         }
@@ -657,6 +757,9 @@
 
             cases = newCases;
             totalSecondsWorked = newMinutes * 60;
+            const schedule = breakTimeInputs.map(input => input.value);
+            localStorage.setItem(BREAK_STORAGE_KEY, JSON.stringify(schedule));
+            alertedBreaks.clear();
 
             balanceSeconds = (cases * goal) - totalSecondsWorked;
             currentCaseSeconds = 0;
@@ -668,33 +771,6 @@
             updateStats();
 
             closeModal();
-        }
-
-        function resetTimer() {
-            if (confirm("Are you sure you want to completely erase today's data?")) {
-                clearInterval(interval);
-                isRunning = false;
-
-                balanceSeconds = 0;
-                totalSecondsWorked = 0;
-                currentCaseSeconds = 0;
-                cases = 0;
-
-                caseCountDisplay.textContent = 0;
-
-                updateDisplay();
-                updateCurrentCaseDisplay();
-                updateStats();
-
-                statusText.textContent = "Ready";
-                statusText.style.color = "#8a8a9b";
-                statusInd.classList.remove('status-on');
-
-                pauseBtn.textContent = "Start";
-                pauseBtn.classList.remove('active');
-
-                closeModal();
-            }
         }
 
         // Reloj en vivo de Colombia.
@@ -735,6 +811,9 @@
         // Mostrar la hora inmediatamente y actualizarla cada segundo.
         updateColombiaTime();
         setInterval(updateColombiaTime, 1000);
+        loadBreakSchedule();
+        checkBreakReminders();
+        setInterval(checkBreakReminders, 10000);
 
         // Inicialización de los temporizadores.
         updateDisplay();
