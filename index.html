@@ -372,23 +372,45 @@
         .break-reminder {
             display: none;
             position: fixed;
-            top: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: min(420px, calc(100% - 32px));
+            inset: 0;
+            padding: 20px;
             box-sizing: border-box;
-            padding: 14px 18px;
-            border: 1px solid var(--brand-primary);
-            border-radius: 14px;
-            background: #211638;
-            color: #fff;
-            box-shadow: 0 10px 35px rgba(0,0,0,0.55);
+            background: rgba(0,0,0,0.72);
+            backdrop-filter: blur(7px);
             z-index: 200;
-            text-align: center;
-            font-weight: 600;
+            align-items: center;
+            justify-content: center;
         }
 
-        .break-reminder.visible { display: block; }
+        .break-reminder.visible { display: flex; }
+
+        .break-dialog {
+            width: min(420px, 100%);
+            box-sizing: border-box;
+            padding: 28px;
+            border: 1px solid var(--brand-primary);
+            border-radius: 22px;
+            background: var(--card-bg);
+            color: #fff;
+            box-shadow: 0 24px 70px rgba(0,0,0,0.65), 0 0 35px rgba(139,92,246,0.18);
+            text-align: center;
+            animation: reminderIn 0.22s ease-out;
+        }
+
+        @keyframes reminderIn {
+            from { opacity: 0; transform: translateY(10px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .break-dialog-icon { font-size: 2.4rem; margin-bottom: 10px; }
+        .break-dialog h2 { margin: 0 0 10px; font-size: 1.35rem; }
+        .break-dialog p { margin: 0; color: var(--text-muted); line-height: 1.5; }
+        .break-dialog .break-action {
+            width: 100%;
+            margin-top: 22px;
+            background: var(--btn-gradient);
+            color: #fff;
+        }
 
         .break-settings-title {
             margin: 8px 0 0;
@@ -445,7 +467,14 @@
 </head>
 
 <body>
-    <div class="break-reminder" id="break-reminder" role="status" aria-live="assertive"></div>
+    <div class="break-reminder" id="break-reminder" role="alertdialog" aria-modal="true" aria-labelledby="break-reminder-title" aria-describedby="break-reminder-message">
+        <div class="break-dialog">
+            <div class="break-dialog-icon" aria-hidden="true">☕</div>
+            <h2 id="break-reminder-title">Break coming up</h2>
+            <p id="break-reminder-message"></p>
+            <button class="break-action" id="break-reminder-close" type="button">Got it</button>
+        </div>
+    </div>
     <div class="container">
         <h1>AHT Control Center</h1>
 
@@ -519,7 +548,7 @@
                     <label>15-minute break:</label>
                     <input type="time" id="break-time-3">
                 </div>
-                <p class="modal-note">The reminder appears in this page. Desktop alerts also appear if browser notifications are already enabled.</p>
+                <p class="modal-note">A pop-up will appear in this page one minute before each scheduled break.</p>
 
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick="closeModal()">Cancel</button>
@@ -558,9 +587,10 @@
         const editTimeInput = document.getElementById('edit-time');
         const breakTimeInputs = [1, 2, 3].map(i => document.getElementById(`break-time-${i}`));
         const breakReminder = document.getElementById('break-reminder');
+        const breakReminderMessage = document.getElementById('break-reminder-message');
+        const breakReminderClose = document.getElementById('break-reminder-close');
         const BREAK_STORAGE_KEY = 'aht-break-schedule';
         const alertedBreaks = new Set();
-        let reminderTimeout = null;
 
         function loadBreakSchedule() {
             try {
@@ -572,15 +602,22 @@
         }
 
         function showBreakReminder(message) {
-            breakReminder.textContent = message;
+            breakReminderMessage.textContent = message;
             breakReminder.classList.add('visible');
-            clearTimeout(reminderTimeout);
-            reminderTimeout = setTimeout(() => breakReminder.classList.remove('visible'), 30000);
-
-            if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-                new Notification('AHT break reminder', { body: message });
-            }
+            breakReminderClose.focus();
         }
+
+        function dismissBreakReminder() {
+            breakReminder.classList.remove('visible');
+        }
+
+        breakReminderClose.addEventListener('click', dismissBreakReminder);
+        breakReminder.addEventListener('click', event => {
+            if (event.target === breakReminder) dismissBreakReminder();
+        });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && breakReminder.classList.contains('visible')) dismissBreakReminder();
+        });
 
         function checkBreakReminders() {
             const now = new Date();
