@@ -438,6 +438,25 @@
             font: inherit;
         }
 
+        .modal select {
+            color-scheme: dark;
+            background: #1e1e26;
+            border: 1px solid var(--border-color);
+            color: var(--brand-primary);
+            padding: 8px;
+            border-radius: 8px;
+            width: 170px;
+            font: inherit;
+        }
+
+        .btn-preview {
+            padding: 8px 12px;
+            background: #272733;
+            color: #fff;
+            border: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+
         /* Información inferior */
         .footer-info {
             margin-top: 20px;
@@ -550,6 +569,22 @@
                 </div>
                 <p class="modal-note">A pop-up will appear in this page one minute before each scheduled break.</p>
 
+                <h3 class="break-settings-title">Alarm sound</h3>
+                <div class="input-group">
+                    <label for="alarm-sound">Choose a sound:</label>
+                    <select id="alarm-sound">
+                        <option value="Alarm 1.mp3">Alarm 1</option>
+                        <option value="Alarm 2.mp3">Alarm 2</option>
+                        <option value="nuclear-greece.mp3">Nuclear Greece</option>
+                        <option value="nuclear-guyana.mp3">Nuclear Guyana</option>
+                        <option value="roaster.mp3">Roaster</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <span></span>
+                    <button class="btn-preview" id="preview-alarm" type="button">▶ Preview</button>
+                </div>
+
                 <div class="modal-actions">
                     <button class="btn-cancel" onclick="closeModal()">Cancel</button>
                     <button class="btn-save" onclick="saveSession()">Update</button>
@@ -586,11 +621,32 @@
         const editCasesInput = document.getElementById('edit-cases');
         const editTimeInput = document.getElementById('edit-time');
         const breakTimeInputs = [1, 2, 3].map(i => document.getElementById(`break-time-${i}`));
+        const alarmSoundSelect = document.getElementById('alarm-sound');
+        const previewAlarmButton = document.getElementById('preview-alarm');
         const breakReminder = document.getElementById('break-reminder');
         const breakReminderMessage = document.getElementById('break-reminder-message');
         const breakReminderClose = document.getElementById('break-reminder-close');
         const BREAK_STORAGE_KEY = 'aht-break-schedule';
+        const ALARM_SOUND_STORAGE_KEY = 'aht-alarm-sound';
+        const alarmAudio = new Audio();
         const alertedBreaks = new Set();
+
+        function loadAlarmSound() {
+            const savedSound = localStorage.getItem(ALARM_SOUND_STORAGE_KEY);
+            if ([...alarmSoundSelect.options].some(option => option.value === savedSound)) {
+                alarmSoundSelect.value = savedSound;
+            }
+        }
+
+        function playAlarmSound() {
+            alarmAudio.pause();
+            alarmAudio.currentTime = 0;
+            alarmAudio.src = alarmSoundSelect.value;
+            alarmAudio.loop = false;
+            alarmAudio.play().catch(error => console.warn('Could not play alarm sound:', error));
+        }
+
+        previewAlarmButton.addEventListener('click', playAlarmSound);
 
         function loadBreakSchedule() {
             try {
@@ -604,20 +660,18 @@
         function showBreakReminder(message) {
             breakReminderMessage.textContent = message;
             breakReminder.classList.add('visible');
+            playAlarmSound();
+            alarmAudio.loop = true;
             breakReminderClose.focus();
         }
 
         function dismissBreakReminder() {
             breakReminder.classList.remove('visible');
+            alarmAudio.pause();
+            alarmAudio.currentTime = 0;
         }
 
         breakReminderClose.addEventListener('click', dismissBreakReminder);
-        breakReminder.addEventListener('click', event => {
-            if (event.target === breakReminder) dismissBreakReminder();
-        });
-        document.addEventListener('keydown', event => {
-            if (event.key === 'Escape' && breakReminder.classList.contains('visible')) dismissBreakReminder();
-        });
 
         function checkBreakReminders() {
             const now = new Date();
@@ -633,13 +687,14 @@
                 if (!input.value) return;
                 const [hour, minute] = input.value.split(':').map(Number);
                 const start = new Date(Date.UTC(2000, 0, 1, hour, minute));
-                start.setUTCMinutes(start.getUTCMinutes() - 1);
-                const reminderTime = `${String(start.getUTCHours()).padStart(2, '0')}:${String(start.getUTCMinutes()).padStart(2, '0')}`;
+                start.setUTCSeconds(start.getUTCSeconds() - 30);
+                const reminderTime = `${String(start.getUTCHours()).padStart(2, '0')}:${String(start.getUTCMinutes()).padStart(2, '0')}:${String(start.getUTCSeconds()).padStart(2, '0')}`;
                 const key = `${today}-${index}-${input.value}`;
-                if (currentMinute === reminderTime && !alertedBreaks.has(key)) {
+                const currentSecond = `${getPart('hour')}:${getPart('minute')}:${getPart('second')}`;
+                if (currentSecond === reminderTime && !alertedBreaks.has(key)) {
                     alertedBreaks.add(key);
                     const labels = ['15-minute break', '45-minute lunch', '15-minute break'];
-                    showBreakReminder(`Your ${labels[index]} starts in 1 minute.`);
+                    showBreakReminder(`Your ${labels[index]} starts in 30 seconds.`);
                 }
             });
         }
@@ -786,6 +841,8 @@
 
         function closeModal() {
             modal.style.display = 'none';
+            alarmAudio.pause();
+            alarmAudio.currentTime = 0;
         }
 
         function saveSession() {
@@ -797,6 +854,7 @@
             totalSecondsWorked = newMinutes * 60;
             const schedule = breakTimeInputs.map(input => input.value);
             localStorage.setItem(BREAK_STORAGE_KEY, JSON.stringify(schedule));
+            localStorage.setItem(ALARM_SOUND_STORAGE_KEY, alarmSoundSelect.value);
             alertedBreaks.clear();
 
             balanceSeconds = (cases * goal) - totalSecondsWorked;
@@ -850,6 +908,7 @@
         updateColombiaTime();
         setInterval(updateColombiaTime, 1000);
         loadBreakSchedule();
+        loadAlarmSound();
         checkBreakReminders();
         setInterval(checkBreakReminders, 10000);
 
