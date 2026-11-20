@@ -566,7 +566,7 @@
                     <label>15-minute break:</label>
                     <input type="time" id="break-time-3">
                 </div>
-                <p class="modal-note">A pop-up will appear in this page one minute before each scheduled break.</p>
+                <p class="modal-note">A pop-up will appear in this page 30 seconds before each scheduled break.</p>
 
                 <h3 class="break-settings-title">Alarm sound</h3>
                 <div class="input-group">
@@ -676,21 +676,22 @@
             const now = new Date();
             const parts = new Intl.DateTimeFormat('en-CA', {
                 timeZone: 'America/Bogota', year: 'numeric', month: '2-digit', day: '2-digit',
-                hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
             }).formatToParts(now);
             const getPart = type => parts.find(part => part.type === type).value;
             const today = `${getPart('year')}-${getPart('month')}-${getPart('day')}`;
-            const currentMinute = `${getPart('hour')}:${getPart('minute')}`;
+            const currentTime = `${getPart('hour')}:${getPart('minute')}:${getPart('second')}`;
 
             breakTimeInputs.forEach((input, index) => {
                 if (!input.value) return;
                 const [hour, minute] = input.value.split(':').map(Number);
-                const start = new Date(Date.UTC(2000, 0, 1, hour, minute));
-                start.setUTCSeconds(start.getUTCSeconds() - 30);
-                const reminderTime = `${String(start.getUTCHours()).padStart(2, '0')}:${String(start.getUTCMinutes()).padStart(2, '0')}:${String(start.getUTCSeconds()).padStart(2, '0')}`;
+                // The scheduled inputs and current time are both interpreted as Colombia local time.
+                // Build a UTC clock value only for safe arithmetic, avoiding browser-local timezone offsets.
+                const scheduledTime = Date.UTC(2000, 0, 1, hour, minute, 0);
+                const reminderTime = new Date(scheduledTime - 30 * 1000);
+                const reminderClock = `${String(reminderTime.getUTCHours()).padStart(2, '0')}:${String(reminderTime.getUTCMinutes()).padStart(2, '0')}:${String(reminderTime.getUTCSeconds()).padStart(2, '0')}`;
                 const key = `${today}-${index}-${input.value}`;
-                const currentSecond = `${getPart('hour')}:${getPart('minute')}:${getPart('second')}`;
-                if (currentSecond === reminderTime && !alertedBreaks.has(key)) {
+                if (currentTime === reminderClock && !alertedBreaks.has(key)) {
                     alertedBreaks.add(key);
                     const labels = ['15-minute break', '45-minute lunch', '15-minute break'];
                     showBreakReminder(`Your ${labels[index]} starts in 30 seconds.`);
@@ -909,7 +910,7 @@
         loadBreakSchedule();
         loadAlarmSound();
         checkBreakReminders();
-        setInterval(checkBreakReminders, 10000);
+        setInterval(checkBreakReminders, 1000);
 
         // Inicialización de los temporizadores.
         updateDisplay();
